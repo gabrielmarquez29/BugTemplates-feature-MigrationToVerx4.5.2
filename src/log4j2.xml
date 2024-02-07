@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorinterval="30" status="info" strict="true">
+    <Properties>
+        <Property name="filename">logs/iLock-</Property>
+    </Properties>
+    <Appenders>
+        <Appender type="Console" name="Console">
+            <Layout type="PatternLayout" pattern="%d %p [%t] %m%n" />
+        </Appender>
+        <Appender type="Console" name="FLOW">
+            <Layout type="PatternLayout" pattern="%C{1}.%M %m %ex%n" />
+        </Appender>
+
+        <RollingFile name="RollingFileError" fileName="${filename}error.log" filePattern="${filename}error-%d{MM-dd-yyyy}.log.gz"
+                 ignoreExceptions="false">
+
+	        <PatternLayout>
+	        	<Pattern>%d %p %C{10} [%t] %m%n</Pattern>
+	      	</PatternLayout>
+
+         	<TimeBasedTriggeringPolicy />
+    	</RollingFile>
+
+         <RollingFile name="RollingFileAll" fileName="${filename}all.log" filePattern="${filename}all-%d{yyyyMMdd}.log.gz"
+                 ignoreExceptions="false">
+
+	        <PatternLayout>
+	        	<Pattern>%d %p %C{10} [%t] %m%n</Pattern>
+	      	</PatternLayout>
+			<Policies>
+         		<TimeBasedTriggeringPolicy />
+         		<SizeBasedTriggeringPolicy size="20MB"/>
+         	</Policies>
+
+
+    	</RollingFile>
+
+
+    </Appenders>
+    <Loggers>
+
+        <Root level="info">
+            <AppenderRef ref="RollingFileAll" level="trace"/>
+            <AppenderRef ref="Console" level="trace"/>
+            <AppenderRef ref="RollingFileError" level="error"/>
+        </Root>
+    </Loggers>
+</Configuration>

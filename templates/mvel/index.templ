@@ -1,0 +1,94 @@
+<html>
+<head>
+<script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+  <script src="/static/sockjs/sockjs.min.js"></script>
+  <!--<script src="/static/sockjs/vertx-eventbus.js"></script>-->
+  <script src="/static/sockjs/eventbus-bridge-client.js"></script>
+  
+</head>
+<style>
+  .news {
+    font-size: 20pt;
+  }
+</style>
+<body>
+<h1>Static and dynamic server. Click on some links below</h1>
+
+<br>
+<br>
+<a href="/page1.templ">Static Page 1</a>
+<a href="/page2">Static Page 2</a>
+<a href="dynamic/mytempl.templ">Dynamic page</a>
+
+<div class="news">Latest news:</div>
+<br>
+
+<div id="status" class="news"></div>
+
+<script>
+  const d= document;
+  let eventBus=null;
+  let recInterval=null;
+  const sockjs_url="http://localhost:8080/eventbus";
+  const sockjs_url_api="http://localhost:8080/api";
+d.addEventListener("DOMContentLoaded", (event) => {
+  console.log("contenido Cargado!");
+    //sensorRealTimeInit(sockjs_url);
+    sensorRealTimeInit1(sockjs_url_api);
+});
+
+function sensorRealTimeInit(sockjs_url) {
+  eventBus = new EventBus(sockjs_url, {"vertxbus_ping_interval": 300000});
+  //eventBus.enableReconnect(true);
+  eventBus.onopen = function () {
+    console.log("eventBus open!");
+    //eventBus.send('news-feed', {name: 'tim', age: 587});
+    eventBus.registerHandler("news-feed", function (err, msg) {
+    msg !== null && (console.log("message", msg), msg);
+	  err !== null && (console.log("error", err), err);
+      const $status=d.getElementById("status");
+      $status.innerText=msg.body;
+    });
+
+
+  }
+
+  eventBus.onclose = function() {
+    console.log("eventBus closed!");
+	  recInterval = setInterval(function() {
+	    sensorRealTimeInit(sockjs_url);
+	}, 2000);					 
+	};
+			         
+			         
+	clearInterval(recInterval);
+}
+
+function sensorRealTimeInit1(sockjs_url_api) {
+  eventBus = new EventBus(sockjs_url_api, {"vertxbus_ping_interval": 300000});
+
+  eventBus.onopen = function () {
+    console.log("eventBus open!");
+    //eventBus.send('news-feed', {name: 'tim', age: 587});
+    eventBus.registerHandler("api-message", function (err, msg) {
+    msg !== null && (console.log("message", msg), msg);
+	  err !== null && (console.log("error", err), err);
+      const $status=d.getElementById("status");
+      $status.innerText=msg.body;
+    });
+
+
+  }
+
+  eventBus.onclose = function() {
+    console.log("eventBus closed!");
+	  recInterval = setInterval(function() {
+      console.log("Reconectando...");
+	    sensorRealTimeInit(sockjs_url);
+	}, 2000);					 
+	};
+}
+
+</script>
+</body>
+</html>
